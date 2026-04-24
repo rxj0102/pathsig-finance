@@ -1,0 +1,66 @@
+# Central experiment configuration for pathsig-finance
+# -------------------------------------------------------
+# Edit this file to change experiment parameters without modifying scripts.
+
+data:
+  # Set mode to 'synthetic' (no data download needed) or 'real' (requires CSV/Parquet)
+  mode: synthetic
+  # For mode: real, specify the path to your panel file
+  panel_path: data/processed/panel.parquet
+  start_date: "2000-01-01"
+  end_date: "2022-12-31"
+  min_obs_per_stock: 252   # minimum daily observations per stock
+  id_col: ticker
+
+  # Synthetic data settings (used when mode: synthetic)
+  synthetic:
+    n_paths: 300
+    n_steps: 504    # 2 years of daily data
+    leverage_corr: -0.7
+    momentum_strength: 0.05
+    seed: 42
+
+signature:
+  # Channel columns to include in the path
+  channels:
+    - log_return
+    - realized_vol
+    - log_volume
+  # Rolling window length (trading days)
+  window: 21
+  # Truncation depth
+  depth: 3
+  # Augmentations applied before signature computation
+  augmentations:
+    - time
+    - lead_lag
+  normalize: true
+  use_gpu: false
+
+model:
+  type: ridge           # one of: ols, ridge, elasticnet, rf
+  standardize: true
+  min_train_periods: 252   # minimum dates before first OOS prediction
+
+evaluation:
+  n_quantiles: 5        # portfolio sort quantiles
+  nw_lags: null         # null = Andrews automatic bandwidth
+  dm_loss: squared      # loss for Diebold-Mariano test
+
+ablation:
+  depths: [1, 2, 3, 4]
+  windows: [5, 10, 21, 63, 126]
+  augmentation_sets:
+    - []
+    - [time]
+    - [lead_lag]
+    - [time, lead_lag]
+    - [time, lead_lag, cma]
+
+output:
+  results_dir: experiments/results
+  figures_dir: experiments/figures
+  save_predictions: true
+  save_features: false    # set true for large-scale debugging (can be big)
+  figure_format: png
+  figure_dpi: 150
