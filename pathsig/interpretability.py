@@ -61,9 +61,17 @@ def interpret_level1(
 
         S^1_i = ∫_0^T dX^i_t = X^i_T - X^i_0
 
-    This is the net displacement of channel i over the window.  For a
-    log-return channel (X^i_t = log P_t) this equals the cumulative
-    log-return — precisely the momentum signal of Jegadeesh & Titman (1993).
+    This is the net displacement of channel i over the window.
+
+    When the path is the **log-price series** (X^i_t = log P_t, so that
+    the increments are log-returns), S^1_i = log P_T - log P_0 equals the
+    **cumulative log-return** — precisely the momentum signal of Jegadeesh &
+    Titman (1993).
+
+    When the path is the **raw log-return series** (X^i_t = r_t), the
+    increments are *differences* of returns (r_t - r_{t-1}), so
+    S^1_i = r_T - r_0 ≠ cumulative return.  In that case S^1 is still a
+    useful feature but it is not the momentum signal.
 
     Parameters
     ----------

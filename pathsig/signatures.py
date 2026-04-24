@@ -297,6 +297,19 @@ def compute_signature(
         raise ValueError(f"path must be 2-D (T, d), got shape {path.shape}.")
     if depth < 1:
         raise ValueError(f"depth must be >= 1, got {depth}.")
+    if np.any(np.isnan(path)):
+        raise ValueError(
+            "path contains NaN values. Fill or drop missing data before computing signatures."
+        )
+
+    d = path.shape[1]
+    sig_dim = signature_dimension(d, depth)
+    if sig_dim > 5000:
+        logger.warning(
+            "High-dimensional signature: %d features (d=%d, depth=%d). "
+            "Consider using PCA or the log-signature for dimensionality control.",
+            sig_dim, d, depth,
+        )
 
     if use_gpu:
         return _compute_signature_signatory(path, depth)

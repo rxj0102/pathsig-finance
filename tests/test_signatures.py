@@ -190,6 +190,19 @@ def test_compute_signature_short_path():
         compute_signature(np.array([[1.0, 2.0]]), depth=1)
 
 
+def test_compute_signature_nan_raises():
+    """NaN values in the path should raise ValueError with informative message."""
+    path = np.array([[0.0, 1.0], [np.nan, 2.0], [1.0, 3.0]])
+    with pytest.raises(ValueError, match="NaN"):
+        compute_signature(path, depth=2)
+
+
+def test_compute_signature_nan_raises_first_row():
+    path = np.array([[np.nan, 0.0], [1.0, 1.0]])
+    with pytest.raises(ValueError, match="NaN"):
+        compute_signature(path, depth=1)
+
+
 # ---------------------------------------------------------------------------
 # Sanity: signature of reversed path differs (not palindrome)
 # ---------------------------------------------------------------------------
