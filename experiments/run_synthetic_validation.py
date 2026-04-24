@@ -236,9 +236,12 @@ def validate_momentum(cfg: dict) -> dict:
         rets = grp["log_return"].values.astype(float)
 
         for t in range(window, T - 1):
-            path_w = rets[t - window : t].reshape(-1, 1)
-            sig = compute_signature(path_w, depth=1)
-            cum_ret = sig[0]  # = sum of returns = level-1 term
+            # Build log-price path starting at 0; S^1 = X_T - X_0 = cumulative return.
+            # Using raw return values as a path would give S^1 = last_ret - first_ret ≠ cumret.
+            ret_w = rets[t - window : t]
+            price_w = np.concatenate([[0.0], np.cumsum(ret_w)]).reshape(-1, 1)
+            sig = compute_signature(price_w, depth=1)
+            cum_ret = sig[0]  # = cumulative log-return (exact identity)
             next_ret = rets[t]
             pairs_x.append(cum_ret)
             pairs_y.append(next_ret)

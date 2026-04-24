@@ -73,10 +73,12 @@ def analyse_momentum(panel: pd.DataFrame, window: int, fig_dir: Path) -> dict:
 
         sig_mom, hc_mom = [], []
         for t in range(window, T):
-            path_w = rets[t - window : t].reshape(-1, 1)
-            sig = compute_signature(path_w, depth=1)
-            sig_mom.append(float(sig[0]))         # S^1_0 = cumulative return
-            hc_mom.append(float(rets[t - window : t].sum()))  # same thing
+            # S^1 = X_T - X_0 = cumulative return only when path = log-price series.
+            ret_w = rets[t - window : t]
+            price_w = np.concatenate([[0.0], np.cumsum(ret_w)]).reshape(-1, 1)
+            sig = compute_signature(price_w, depth=1)
+            sig_mom.append(float(sig[0]))          # S^1_0 = cumulative log-return (exact)
+            hc_mom.append(float(ret_w.sum()))       # same: sum of log-returns = cum return
 
         corr = float(np.corrcoef(sig_mom, hc_mom)[0, 1]) if len(sig_mom) > 1 else np.nan
         results_per_ticker.append({"ticker": ticker, "corr": corr})
