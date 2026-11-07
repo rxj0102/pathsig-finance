@@ -1,5 +1,7 @@
 # pathsig-finance
 
+[![CI](https://github.com/rxj0102/pathsig-finance/actions/workflows/ci.yml/badge.svg)](https://github.com/rxj0102/pathsig-finance/actions/workflows/ci.yml)
+
 **Rough path signatures for financial time series** — a Python library and research
 toolkit for applying truncated path signatures to cross-sectional equity return
 prediction, with a rigorous focus on mathematical interpretability.
