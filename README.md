@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/rxj0102/pathsig-finance/actions/workflows/ci.yml/badge.svg)](https://github.com/rxj0102/pathsig-finance/actions/workflows/ci.yml)
 
-**Rough path signatures for financial time series** — a Python library and research
+**Rough path signatures for financial time series**: a Python library and research
 toolkit for applying truncated path signatures to cross-sectional equity return
 prediction, with a rigorous focus on mathematical interpretability.
 
@@ -37,7 +37,7 @@ where the level-$k$ terms are iterated integrals:
 $$S(X)^k_{i_1, \ldots, i_k} = \int_{0 < t_1 < \cdots < t_k < T} dX^{i_1}_{t_1} \cdots dX^{i_k}_{t_k}$$
 
 **Key property (Lyons 1998):** Any continuous functional of the path can be approximated
-by a *linear* functional of its signature as $N \to \infty$ — the signature is a universal
+by a *linear* functional of its signature as $N \to \infty$: the signature is a universal
 feature map for sequential data.
 
 The output dimension is $\sum_{k=1}^{N} d^k$. For 3 channels and depth 3: **39 features**.
@@ -200,7 +200,7 @@ an explicit volatility channel.
 
 **Why Lévy area for the leverage effect?** The symmetric part of $S^2_{r,\sigma}$
 captures the product of total displacements; the *anti*symmetric part (Lévy area)
-isolates the temporal ordering — which channel moved first — giving a clean signal
+isolates the temporal ordering, which channel moved first, giving a clean signal
 for asymmetric effects like leverage.
 
 ---

@@ -12,10 +12,10 @@ The panel loader expects a long-format file with the following schema:
 | `date` | date | ✓ | Trading date (YYYY-MM-DD) |
 | `ticker` / `permno` | str / int | ✓ | Stock identifier |
 | `log_return` | float | ✓ | Daily log-return ln(P_t/P_{t-1}) |
-| `realized_vol` | float | — | Annualised realised volatility |
-| `log_volume` | float | — | Natural log of share volume |
-| `dollar_volume` | float | — | Price × volume in USD |
-| `mktcap` | float | — | Market capitalisation (for value-weighting) |
+| `realized_vol` | float | n/a | Annualised realised volatility |
+| `log_volume` | float | n/a | Natural log of share volume |
+| `dollar_volume` | float | n/a | Price × volume in USD |
+| `mktcap` | float | n/a | Market capitalisation (for value-weighting) |
 
 ## Obtaining Real Data
 
