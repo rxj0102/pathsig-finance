@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/rxj0102/pathsig-finance/actions/workflows/ci.yml/badge.svg)](https://github.com/rxj0102/pathsig-finance/actions/workflows/ci.yml)
 
-**Rough path signatures for financial time series** — a Python library and research
+**Rough path signatures for financial time series**: a Python library and research
 toolkit for applying truncated path signatures to cross-sectional equity return
 prediction, with a rigorous focus on mathematical interpretability.
 
@@ -37,7 +37,7 @@ where the level-$k$ terms are iterated integrals:
 $$S(X)^k_{i_1, \ldots, i_k} = \int_{0 < t_1 < \cdots < t_k < T} dX^{i_1}_{t_1} \cdots dX^{i_k}_{t_k}$$
 
 **Key property (Lyons 1998):** Any continuous functional of the path can be approximated
-by a *linear* functional of its signature as $N \to \infty$ — the signature is a universal
+by a *linear* functional of its signature as $N \to \infty$: the signature is a universal
 feature map for sequential data.
 
 The output dimension is $\sum_{k=1}^{N} d^k$. For 3 channels and depth 3: **39 features**.
@@ -200,7 +200,7 @@ an explicit volatility channel.
 
 **Why Lévy area for the leverage effect?** The symmetric part of $S^2_{r,\sigma}$
 captures the product of total displacements; the *anti*symmetric part (Lévy area)
-isolates the temporal ordering — which channel moved first — giving a clean signal
+isolates the temporal ordering, which channel moved first, giving a clean signal
 for asymmetric effects like leverage.
 
 ---
@@ -218,6 +218,35 @@ for asymmetric effects like leverage.
 ```
 
 ---
+
+## Reproducibility
+
+### Data availability
+
+All inputs come from free, public sources. No paid data or API keys are required unless noted.
+
+- Yahoo Finance via the yfinance package (free, no key)
+- Files shipped in the `data/` folder of this repository
+
+### Computational requirements
+
+- Python 3.12.3. Every dependency version is pinned in `uv.lock`.
+- Checked on Linux x86_64 with 2 CPU cores and 8 GB RAM. No GPU is needed.
+
+```bash
+pip install uv     # once
+uv sync            # installs the exact pinned environment
+uv run pytest -q   # runs the test suite
+```
+
+### Runtime
+
+The test suite (75 tests) finishes in about 59 seconds on the machine above, including any data downloads it triggers.
+
+### Citation
+
+Citation metadata is in `CITATION.cff`. GitHub turns it into a Cite this repository button on the repo page.
+
 
 ## References
 
