@@ -173,70 +173,33 @@ def cumulative_moving_average_augmentation(path: np.ndarray) -> np.ndarray:
 
 
 def logsig_augmentation(path: np.ndarray, depth: int) -> np.ndarray:
-    """Compute the log-signature of the path.
+    """Compute the log-signature of the entire path (not a rolling version).
 
-    The log-signature lives in the free Lie algebra and is strictly more
-    compact than the signature at depth >= 2.  For d channels and depth 2
-    the log-signature has d + d(d-1)/2 coordinates (the Lie bracket terms
-    collapse to antisymmetric combinations), compared to d + d^2 for the
-    full signature.
+    The log-signature lives in the free Lie algebra and is more compact than the
+    signature at depth >= 2: for d channels and depth 2 it has d + d(d-1)/2
+    coordinates against d + d^2. Concretely, at depth 2:
 
-    Concretely, at depth 2:
-        logsig^1_i = sig^1_i  (level-1 terms are unchanged)
-        logsig^2_{i,j} = sig^2_{i,j} - sig^2_{j,i}  (Lévy area)
+        logsig^1_i = sig^1_i                            (increments)
+        logsig^2_{i,j} = (sig^2_{i,j} - sig^2_{j,i}) / 2  for i < j (Levy area)
 
-    Higher-level terms follow from the Baker-Campbell-Hausdorff formula.
+    Coordinates are Lyndon-word coefficients of the tensor logarithm, any depth;
+    see :func:`pathsig.signatures.compute_logsignature`.
 
     Parameters
     ----------
     path:
-        Shape ``(T, d)``.  This function computes the log-signature of
-        the *entire* path (not a rolling version).
+        Shape ``(T, d)``.
     depth:
         Truncation level.
 
     Returns
     -------
     np.ndarray
-        Log-signature vector; dimension depends on the Lyndon basis size.
-
-    Notes
-    -----
-    Requires the ``signatory`` package for depth >= 3.  For depth <= 2
-    a pure NumPy implementation is used.
+        Log-signature vector.
     """
-    from pathsig.signatures import compute_signature, signature_dimension
+    from pathsig.signatures import compute_logsignature
 
-    path = np.asarray(path, dtype=float)
-    _, d = path.shape
-
-    try:
-        import torch
-        import signatory
-
-        path_t = torch.tensor(path, dtype=torch.float32).unsqueeze(0)
-        logsig = signatory.logsignature(path_t, depth=depth)
-        return logsig.squeeze(0).detach().numpy()
-    except ImportError:
-        pass
-
-    # Depth-2 NumPy fallback: use the relation logsig = sig - (1/2) sig^2 + ...
-    # At depth 2 the antisymmetrisation gives the Lévy area.
-    if depth > 2:
-        raise ImportError(
-            "signatory is required for log-signature at depth > 2. "
-            "Install with: pip install signatory"
-        )
-
-    sig = compute_signature(path, depth=2)
-    level1 = sig[:d]
-    level2 = sig[d : d + d * d].reshape(d, d)
-    # Lévy areas: antisymmetric part of level 2
-    levy_areas = []
-    for i in range(d):
-        for j in range(i + 1, d):
-            levy_areas.append(level2[i, j] - level2[j, i])
-    return np.concatenate([level1, levy_areas])
+    return compute_logsignature(np.asarray(path, dtype=float), depth=depth)
 
 
 def apply_augmentations(path: np.ndarray, augmentations: list[str]) -> np.ndarray:

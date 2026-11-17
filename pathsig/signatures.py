@@ -362,6 +362,49 @@ def compute_signature_rolling(
     return result
 
 
+def lyndon_words(d: int, depth: int) -> list[tuple[int, ...]]:
+    """Lyndon words over the alphabet 0..d-1 of length 1 to depth, by length then
+    lexicographically (Duval's algorithm). They index the log-signature coordinates."""
+    words: list[tuple[int, ...]] = []
+    w = [-1]
+    while w:
+        w[-1] += 1
+        if len(w) <= depth:
+            words.append(tuple(w))
+        m = len(w)
+        while len(w) < depth:
+            w.append(w[len(w) - m])
+        while w and w[-1] == d - 1:
+            w.pop()
+    return sorted(words, key=lambda x: (len(x), x))
+
+
+def _tensor_mul(a: list[np.ndarray], b: list[np.ndarray], depth: int) -> list[np.ndarray]:
+    """Product of two truncated tensor series with no constant term (levels 1..depth)."""
+    out = [np.zeros_like(x) for x in a]
+    for i in range(1, depth + 1):
+        for j in range(1, depth + 1 - i):
+            out[i + j - 1] = out[i + j - 1] + np.multiply.outer(a[i - 1], b[j - 1])
+    return out
+
+
+def tensor_log_levels(signature: np.ndarray, d: int, depth: int) -> list[np.ndarray]:
+    """Truncated tensor logarithm of a signature, as one tensor per level.
+
+    With S = 1 + X, log S = sum_{k=1}^{depth} (-1)^(k+1) X^k / k, truncated at depth.
+    """
+    levels, pos = [], 0
+    for k in range(1, depth + 1):
+        levels.append(np.asarray(signature[pos: pos + d ** k], dtype=float).reshape((d,) * k))
+        pos += d ** k
+    out = [np.zeros_like(x) for x in levels]
+    power = levels
+    for k in range(1, depth + 1):
+        out = [o + ((-1) ** (k + 1) / k) * p for o, p in zip(out, power)]
+        power = _tensor_mul(power, levels, depth)
+    return out
+
+
 def compute_logsignature(
     path: np.ndarray,
     depth: int = 3,
@@ -369,13 +412,16 @@ def compute_logsignature(
 ) -> np.ndarray:
     """Compute the log-signature (coordinates in the free Lie algebra).
 
-    The log-signature is strictly more compact than the signature for
-    depth >= 2: at depth N it has dimension equal to the sum of the
-    dimensions of the Lyndon basis components up to level N, which for
-    d channels and depth 2 is d + d(d-1)/2 (vs d + d^2 for the signature).
+    The log-signature is the truncated tensor logarithm of the signature. Its
+    coordinates here are the coefficients of the Lyndon words of length 1 to
+    ``depth`` (the convention of signatory's default ``words`` mode), ordered by
+    length then lexicographically; see :func:`lyndon_words`. There are fewer of them
+    than signature terms: for d channels and depth 2, d + d(d-1)/2 against d + d^2.
+    At level 2 the coordinate for the word (i, j), i < j, is the Levy area
+    (S_ij - S_ji) / 2.
 
-    Uses the signatory backend when available; falls back to
-    ``log(1 + signature)`` approximation via the tensor logarithm otherwise.
+    Uses the signatory backend when ``use_gpu`` is True and it is installed;
+    otherwise a NumPy implementation, which gives the same numbers.
 
     Parameters
     ----------
@@ -389,20 +435,21 @@ def compute_logsignature(
     Returns
     -------
     np.ndarray
-        Log-signature vector.
+        Log-signature vector of length ``len(lyndon_words(d, depth))``.
     """
-    try:
-        import torch
-        import signatory
+    path = np.asarray(path, dtype=float)
+    d = path.shape[1]
+    if use_gpu:
+        try:
+            import torch
+            import signatory
 
-        path_t = torch.tensor(path, dtype=torch.float32).unsqueeze(0)
-        logsig = signatory.logsignature(path_t, depth=depth)
-        return logsig.squeeze(0).detach().numpy()
-    except ImportError:
-        logger.warning(
-            "signatory unavailable; returning signature as log-signature approximation."
-        )
-        return compute_signature(path, depth=depth, use_gpu=False)
+            path_t = torch.tensor(path, dtype=torch.float64).unsqueeze(0)
+            return signatory.logsignature(path_t, depth=depth).squeeze(0).detach().numpy()
+        except ImportError:
+            logger.warning("signatory unavailable; using the NumPy log-signature.")
+    log_levels = tensor_log_levels(compute_signature(path, depth=depth), d, depth)
+    return np.array([log_levels[len(w) - 1][w] for w in lyndon_words(d, depth)])
 
 
 def signature_to_dict(
