@@ -181,7 +181,7 @@ pip install -e ".[dev]"
 pytest tests/ -v
 ```
 
-73 tests covering: signature correctness (Chen identity, known analytical values),
+83 tests covering: signature correctness (Chen identity, known analytical values),
 augmentation properties (lead-lag Lévy area = QV), interpretability mappings,
 evaluation statistics (DM test, Fama-MacBeth recovery), and synthetic data properties.
 
@@ -241,7 +241,7 @@ uv run pytest -q   # runs the test suite
 
 ### Runtime
 
-The test suite (75 tests) finishes in about 59 seconds on the machine above, including any data downloads it triggers.
+The test suite (83 tests) finishes in about 59 seconds on the machine above, including any data downloads it triggers.
 
 ### Citation
 
